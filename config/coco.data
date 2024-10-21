@@ -1,6 +1,6 @@
 classes= 3
 train=/kaggle/input/dataset-decay/train
 valid=/kaggle/input/dataset-decay/test
-names=data/coco.names
+names=coco.names
 backup=backup/
 eval=coco
