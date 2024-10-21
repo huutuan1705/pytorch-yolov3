@@ -11,7 +11,7 @@ YOLOv4 and YOLOv7 weights are also compatible with this implementation.
 For normal training and evaluation we recommend installing the package from source using a poetry virtual environment.
 
 ```bash
-git clone https://github.com/eriklindernoren/PyTorch-YOLOv3
+git clone https://github.com/huutuan1705/pytorch-yolov3.git
 cd PyTorch-YOLOv3/
 pip3 install poetry --user
 poetry install
