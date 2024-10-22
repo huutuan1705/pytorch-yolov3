@@ -5,7 +5,7 @@ from __future__ import division
 import os
 import argparse
 import tqdm
-
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
@@ -138,7 +138,6 @@ def run():
         print("\n---- Training Model ----")
 
         model.train()  # Set model to training mode
-
         for batch_i, (_, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc=f"Training Epoch {epoch}")):
             batches_done = len(dataloader) * epoch + batch_i
 
@@ -168,7 +167,7 @@ def run():
                         if batches_done > threshold:
                             lr *= value
                 # Log the learning rate
-                logger.scalar_summary("train/learning_rate", lr, batches_done)
+                # logger.scalar_summary("train/learning_rate", lr, batches_done)
                 # Set learning rate
                 for g in optimizer.param_groups:
                     g['lr'] = lr
@@ -198,10 +197,10 @@ def run():
                 ("train/obj_loss", float(loss_components[1])),
                 ("train/class_loss", float(loss_components[2])),
                 ("train/loss", to_cpu(loss).item())]
-            logger.list_of_scalars_summary(tensorboard_log, batches_done)
+            # logger.list_of_scalars_summary(tensorboard_log, batches_done)
 
             model.seen += imgs.size(0)
-
+            
         # ########
         # Evaluate
         # ########
@@ -227,13 +226,14 @@ def run():
                     ("validation/recall", recall.mean()),
                     ("validation/mAP", AP.mean()),
                     ("validation/f1", f1.mean())]
-                logger.list_of_scalars_summary(evaluation_metrics, epoch)
+                # logger.list_of_scalars_summary(evaluation_metrics, epoch)
                 tmp_mAP = AP.mean()
         
         if tmp_mAP >= mAP:
             checkpoint_path_best = f"checkpoints/yolov3_best.pth"
             torch.save(model.state_dict(), checkpoint_path_best)
-            
+        
+        
         checkpoint_path_last = f"checkpoints/yolov3_last.pth"
         torch.save(model.state_dict(), checkpoint_path_last)
 

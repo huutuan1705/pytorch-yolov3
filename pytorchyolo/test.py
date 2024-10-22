@@ -17,7 +17,7 @@ from pytorchyolo.utils.utils import load_classes, ap_per_class, get_batch_statis
 from pytorchyolo.utils.datasets import ListDataset
 from pytorchyolo.utils.transforms import DEFAULT_TRANSFORMS
 from pytorchyolo.utils.parse_config import parse_data_config
-
+from pytorchyolo.utils.loss import compute_loss
 
 def evaluate_model_file(model_path, weights_path, img_path, class_names, batch_size=8, img_size=416,
                         n_cpu=8, iou_thres=0.5, conf_thres=0.5, nms_thres=0.5, verbose=True):
@@ -57,7 +57,10 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
 
     labels = []
     sample_metrics = []  # List of tuples (TP, confs, pred)
+    losses = []
     for _, imgs, targets in tqdm.tqdm(dataloader, desc="Validating"):
+        imgs_tmp = imgs
+        targets_tmp = targets
         # Extract labels
         labels += targets[:, 1].tolist()
         # Rescale target
@@ -70,6 +73,16 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
             outputs = model(imgs)
             outputs = non_max_suppression(outputs, conf_thres=conf_thres, iou_thres=nms_thres)
 
+        # Compute loss of evaluate
+        imgs_tmp = imgs_tmp.to("cuda", non_blocking=True)
+        targets_tmp = targets_tmp.to("cuda")
+        model.train()
+        outputs_tmp = model(imgs_tmp)
+        loss, _ = compute_loss(outputs_tmp, targets_tmp, model)
+        loss.backward()
+        losses.append(int(to_cpu(loss).item()))       
+        model.eval()
+        
         sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=iou_thres)
 
     if len(sample_metrics) == 0:  # No detections over whole validation set.
@@ -81,7 +94,8 @@ def _evaluate(model, dataloader, class_names, img_size, iou_thres, conf_thres, n
         np.concatenate(x, 0) for x in list(zip(*sample_metrics))]
     metrics_output = ap_per_class(
         true_positives, pred_scores, pred_labels, labels)
-
+    
+    print(f"---- Loss {np.mean(losses):.5f} ----")
     print_eval_stats(metrics_output, class_names, verbose)
 
     return metrics_output
