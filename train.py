@@ -202,16 +202,6 @@ def run():
 
             model.seen += imgs.size(0)
 
-        # #############
-        # Save progress
-        # #############
-
-        # Save model to checkpoint file
-        if epoch % args.checkpoint_interval == 0:
-            checkpoint_path = f"checkpoints/yolov3_ckpt_{epoch}.pth"
-            print(f"---- Saving checkpoint to: '{checkpoint_path}' ----")
-            torch.save(model.state_dict(), checkpoint_path)
-
         # ########
         # Evaluate
         # ########
