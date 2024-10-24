@@ -158,9 +158,13 @@ def run():
                 # Adapt learning rate
                 # Get learning rate defined in cfg
                 lr = model.hyperparams['learning_rate']
-                if batches_done < model.hyperparams['burn_in']:
-                    # Burn in
-                    lr *= (batches_done / model.hyperparams['burn_in'])
+                small_batches = [1000, 2000]
+                if batches_done < 2001:
+                    for small_batch in small_batches:
+                        if batches_done < small_batch:
+                            # Burn in
+                            lr *= (batches_done / small_batch)
+                            break
                 else:
                     # Set and parse the learning rate to the steps defined in the cfg
                     for threshold, value in model.hyperparams['lr_steps']:
