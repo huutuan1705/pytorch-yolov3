@@ -45,14 +45,7 @@ def run():
     parser.add_argument("--image_path", type=str, help="Path to image")
     args = parser.parse_args()
     
-    data_config = parse_data_config(args.data)
-    train_path = data_config["train"]
-    valid_path = data_config["valid"]
-    class_names = load_classes(data_config["names"])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    model = load_model(args.model, args.pretrained_weights)
-    
+    model = load_model(args.model, args.pretrained_weights)   
     predictions = predict(args.image_path, model)
     
     print(predictions)
